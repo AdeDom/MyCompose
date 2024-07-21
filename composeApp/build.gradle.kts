@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -7,6 +6,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -16,38 +16,63 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
         }
     }
-    
+
     sourceSets {
-        
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+
+            implementation(libs.io.insert.koin.android)
+
+            implementation(libs.io.ktor.client.android)
+        }
+        iosMain.dependencies {
+            implementation(libs.io.ktor.client.darwin)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material)
+            implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(compose.materialIconsExtended)
+
+            implementation(libs.io.insert.koin.core)
+            implementation(libs.io.insert.koin.compose)
+            implementation(libs.io.insert.koin.compose.viewmodel)
+
+            implementation(libs.lifecycle.viewmodel.compose)
+
+            implementation(libs.io.ktor.client.core)
+            implementation(libs.io.ktor.client.content.negotiation)
+            implementation(libs.io.ktor.serialization.kotlinx.json)
+
+            implementation(libs.media.kamel.image)
+
+            implementation(libs.navigation.compose)
         }
     }
 }
 
 android {
     namespace = "com.adedom.mycompose"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
@@ -55,8 +80,14 @@ android {
 
     defaultConfig {
         applicationId = "com.adedom.mycompose"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -81,4 +112,3 @@ android {
         debugImplementation(compose.uiTooling)
     }
 }
-
